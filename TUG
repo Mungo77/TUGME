@@ -1,0 +1,76 @@
+# Import the necessary libraries
+import os
+import sys
+import json
+import requests
+import datetime
+import time
+
+# Define the constants
+API_KEY = os.environ['API_KEY']
+BASE_URL = 'https://api.theultimategambler.com'
+
+# Define the functions
+def get_user_profile(username):
+  """Gets the user profile for the given username."""
+  url = f'{BASE_URL}/users/{username}'
+  response = requests.get(url, headers={'Authorization': f'Bearer {API_KEY}'})
+  if response.status_code == 200:
+    return response.json()
+  else:
+    raise Exception(f'Error getting user profile: {response.status_code}')
+
+def get_events(sport, date):
+  """Gets the events for the given sport and date."""
+  url = f'{BASE_URL}/events?sport={sport}&date={date}'
+  response = requests.get(url, headers={'Authorization': f'Bearer {API_KEY}'})
+  if response.status_code == 200:
+    return response.json()
+  else:
+    raise Exception(f'Error getting events: {response.status_code}')
+
+def get_leaderboard(sport, category):
+  """Gets the leaderboard for the given sport and category."""
+  url = f'{BASE_URL}/leaderboards?sport={sport}&category={category}'
+  response = requests.get(url, headers={'Authorization': f'Bearer {API_KEY}'})
+  if response.status_code == 200:
+    return response.json()
+  else:
+    raise Exception(f'Error getting leaderboard: {response.status_code}')
+
+def place_bet(username, event_id, amount):
+  """Places a bet for the given user, event, and amount."""
+  url = f'{BASE_URL}/bets'
+  data = {
+    'username': username,
+    'event_id': event_id,
+    'amount': amount
+  }
+  response = requests.post(url, headers={'Authorization': f'Bearer {API_KEY}'}, data=json.dumps(data))
+  if response.status_code == 201:
+    return response.json()
+  else:
+    raise Exception(f'Error placing bet: {response.status_code}')
+
+# Define the main function
+def main():
+  # Get the user profile for the current user
+  user_profile = get_user_profile(os.environ['USERNAME'])
+
+  # Get the events for today
+  events = get_events('horse_racing', datetime.date.today())
+
+  # Get the leaderboard for today
+  leaderboard = get_leaderboard('horse_racing', 'all_time')
+
+  # Place a bet on the first event
+  bet_id = place_bet(user_profile['username'], events[0]['id'], 10)
+
+  # Print the results
+  print(f'User profile: {user_profile}')
+  print(f'Events: {events}')
+  print(f'Leaderboard: {leaderboard}')
+  print(f'Bet ID: {bet_id}')
+
+if _name_ == '_main_':
+  main()
